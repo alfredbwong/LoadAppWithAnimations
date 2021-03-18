@@ -6,11 +6,7 @@ import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
 import android.util.AttributeSet
-import android.util.Log
-import android.view.MotionEvent
 import android.view.View
-import android.widget.Toast
-import androidx.core.content.ContextCompat.getColor
 import androidx.core.content.withStyledAttributes
 import kotlin.properties.Delegates
 
@@ -26,17 +22,24 @@ class LoadingButton @JvmOverloads constructor(
     private var downloadLoadingColor = 0
     private var downloadCompletedColor = 0
 
+
     private val paint = Paint().apply {
         // Smooth out edges of what is drawn without affecting shape.
         isAntiAlias = true
         strokeWidth = resources.getDimension(R.dimen.strokeWidth)
         textSize = resources.getDimension(R.dimen.textSize)
         textAlign = Paint.Align.CENTER
+        color = Color.WHITE
     }
+
     //Paint for the bg of the loading button
     private val bgPaint = Paint().apply {
         style = Paint.Style.FILL
-        color = Color.GREEN
+    }
+
+    private val testPaint = Paint().apply {
+        style = Paint.Style.FILL
+        color = Color.RED
     }
     private var buttonState: ButtonState by Delegates.observable<ButtonState>(ButtonState.Completed) { p, old, new ->
 //        when (new){
@@ -56,10 +59,10 @@ class LoadingButton @JvmOverloads constructor(
     init {
         isClickable = true
 
-        context.withStyledAttributes(attrs,R.styleable.LoadingButton){
-            downloadClickedColor = getColor (R.styleable.LoadingButton_downloadClicked, 0)
-            downloadLoadingColor = getColor (R.styleable.LoadingButton_downloadLoading, 0)
-            downloadCompletedColor = getColor (R.styleable.LoadingButton_downloadCompleted, 0)
+        context.withStyledAttributes(attrs, R.styleable.LoadingButton) {
+            downloadClickedColor = getColor(R.styleable.LoadingButton_downloadClicked, 0)
+            downloadLoadingColor = getColor(R.styleable.LoadingButton_downloadLoading, 0)
+            downloadCompletedColor = getColor(R.styleable.LoadingButton_downloadCompleted, 0)
         }
     }
 
@@ -67,17 +70,30 @@ class LoadingButton @JvmOverloads constructor(
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
 
-        bgPaint.color = when (buttonState){
-            ButtonState.Loading -> downloadLoadingColor
-            ButtonState.Completed -> downloadCompletedColor
-            ButtonState.Clicked -> downloadClickedColor
+        canvas.apply {
+            drawBackGroundColor()
+            drawLoadingProgressBar()
+//            drawTextBubble()
         }
-        canvas.drawColor(bgPaint.color)
 
-        val textPositionX = canvas.width /2
-        val textPositionY = canvas.height /2 - (paint.descent() + paint.ascent())/2
-
+        //Draw the text
+        val textPositionX = canvas.width / 2
+        val textPositionY = canvas.height / 2 - (paint.descent() + paint.ascent()) / 2
         canvas.drawText("HELLO", textPositionX.toFloat(), textPositionY, paint)
+    }
+
+
+    private fun Canvas.drawLoadingProgressBar() {
+        when (buttonState) {
+            ButtonState.Loading -> drawRect(0f, 0f, 50f, height.toFloat(), testPaint)
+            else -> {
+                drawColor(downloadCompletedColor)
+            }
+        }
+    }
+
+    private fun Canvas.drawBackGroundColor() {
+        drawColor(downloadCompletedColor)
     }
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
@@ -96,6 +112,7 @@ class LoadingButton @JvmOverloads constructor(
     override fun performClick(): Boolean {
         super.performClick()
         buttonState = buttonState.next()
+
         invalidate()
         return true
     }

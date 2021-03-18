@@ -17,4 +17,5 @@
     <string name="download_start">Click To Download</string>
     <string name="downloading">Downloading...</string>
     <string name="download_complete">Download Complete</string>
+    <string name="no_download_selected">Select file to download</string>
 </resources>
