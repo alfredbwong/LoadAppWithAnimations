@@ -22,6 +22,10 @@ class LoadingButton @JvmOverloads constructor(
 
     private val valueAnimator = ValueAnimator()
 
+    private var downloadClickedColor = 0
+    private var downloadLoadingColor = 0
+    private var downloadCompletedColor = 0
+
     private val paint = Paint().apply {
         // Smooth out edges of what is drawn without affecting shape.
         isAntiAlias = true
@@ -35,29 +39,39 @@ class LoadingButton @JvmOverloads constructor(
         color = Color.GREEN
     }
     private var buttonState: ButtonState by Delegates.observable<ButtonState>(ButtonState.Completed) { p, old, new ->
-        when (new){
-            ButtonState.Loading -> {
-                bgPaint.color = Color.YELLOW
-            }
-            ButtonState.Clicked -> {
-                bgPaint.color = Color.RED
-            }
-            ButtonState.Completed -> {
-                bgPaint.color = Color.GREEN
-            }
-        }
+//        when (new){
+//            ButtonState.Loading -> {
+//                bgPaint.color = Color.YELLOW
+//            }
+//            ButtonState.Clicked -> {
+//                bgPaint.color = Color.RED
+//            }
+//            ButtonState.Completed -> {
+//                bgPaint.color = Color.GREEN
+//            }
+//        }
     }
 
 
     init {
         isClickable = true
+
+        context.withStyledAttributes(attrs,R.styleable.LoadingButton){
+            downloadClickedColor = getColor (R.styleable.LoadingButton_downloadClicked, 0)
+            downloadLoadingColor = getColor (R.styleable.LoadingButton_downloadLoading, 0)
+            downloadCompletedColor = getColor (R.styleable.LoadingButton_downloadCompleted, 0)
+        }
     }
 
 
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
 
-        Log.i("LoadingButton", bgPaint.color.toString())
+        bgPaint.color = when (buttonState){
+            ButtonState.Loading -> downloadLoadingColor
+            ButtonState.Completed -> downloadCompletedColor
+            ButtonState.Clicked -> downloadClickedColor
+        }
         canvas.drawColor(bgPaint.color)
 
         val textPositionX = canvas.width /2

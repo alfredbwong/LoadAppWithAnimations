@@ -53,9 +53,9 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_bias="0.921"
-        app:downloadStart="#FFEB3B"
-        app:downloading="#CDDC39"
-        app:downloadEnd="#009688"/>
+        app:downloadClicked="#FFEB3B"
+        app:downloadLoading="#CDDC39"
+        app:downloadCompleted="#009688"/>
 
     <ImageView
         android:id="@+id/imageView4"
