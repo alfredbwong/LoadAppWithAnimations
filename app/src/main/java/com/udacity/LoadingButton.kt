@@ -1,11 +1,12 @@
 package com.udacity
 
-import android.animation.Animator
+import android.animation.AnimatorSet
 import android.animation.ValueAnimator
 import android.content.Context
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
+import android.graphics.RectF
 import android.util.AttributeSet
 import android.util.Log
 import android.view.View
@@ -24,7 +25,11 @@ class LoadingButton @JvmOverloads constructor(
     private var downloadLoadingColor = 0
     private var downloadCompletedColor = 0
 
-    private var vAnimator = ValueAnimator()
+    private var vBackgroundAnimator = ValueAnimator()
+
+    private val animatorSet: AnimatorSet = AnimatorSet().apply {
+        duration = 3000L
+    }
 
     private val paint = Paint().apply {
         // Smooth out edges of what is drawn without affecting shape.
@@ -35,53 +40,82 @@ class LoadingButton @JvmOverloads constructor(
         color = Color.WHITE
     }
 
-    //Paint for the bg of the loading button
-    private val bgPaint = Paint().apply {
-        style = Paint.Style.FILL
-    }
-
     private val testPaint = Paint().apply {
         style = Paint.Style.FILL
         color = Color.RED
+        isAntiAlias = true
+    }
+    private val testPaint2 = Paint().apply {
+        style = Paint.Style.FILL
+        color = Color.BLUE
+        isAntiAlias = true
     }
 
     private var vRectEnd = 0f
-//    private var vCircleEnd = 0f
-//    private val progressCircle = ValueAnimator.ofFloat(360f, 0f).apply {
-//        repeatMode = ValueAnimator.RESTART
-//        repeatCount = ValueAnimator.INFINITE
-//        interpolator = LinearInterpolator()
-//        addUpdateListener {
-//            vCircleEnd = it.animatedValue as Float
-//            invalidate()
-//        }
-//    }
+    private var vCircleEnd = 0f
+    private val progressCircleRectF = RectF()
+    private var progressCircleAnimator = ValueAnimator()
     private var buttonState: ButtonState by Delegates.observable<ButtonState>(ButtonState.Completed) { p, old, new ->
         when (new) {
             ButtonState.Loading -> {
-                vAnimator = ValueAnimator.ofFloat(0f, widthSize.toFloat())
-                vAnimator.addUpdateListener {
-                    val value = it.animatedValue as Float
-                    vRectEnd = value
-                    invalidate()
-                }
-                vAnimator.duration = 1000L
-                vAnimator.repeatCount = ValueAnimator.INFINITE
-                vAnimator.repeatMode = ValueAnimator.RESTART
-                vAnimator.start()
+                progressBarAnimationCalc()
+                progressCircleAnimationCalc()
+//                animatorSet.playTogether(vBackgroundAnimator)
+//                animatorSet.start()
+
             }
             else -> {
                 //Reset background color and remove animator
                 Log.i("buttonState.clear", " Clearing")
-                vRectEnd = 0f
-                vAnimator.removeAllUpdateListeners()
-                vAnimator.cancel()
+
+//                animatorSet.removeAllListeners()
+//                animatorSet.cancel()
+                progressCircleAnimator.cancel()
+                vBackgroundAnimator.cancel()
+                vCircleEnd = 0F
+                vRectEnd = 0F
+                invalidate()
             }
         }
 
 
     }
 
+    private fun progressCircleAnimationCalc() {
+        var hCenter = widthSize.toFloat() * 0.75F
+        var vCenter = heightSize / 2.0F
+        progressCircleAnimator = ValueAnimator.ofFloat(0f, 360f)
+        progressCircleAnimator.addUpdateListener {
+            vCircleEnd = it.animatedValue as Float
+            invalidate()
+
+        }
+        progressCircleRectF.set(
+                hCenter - heightSize / 4.0F,
+                vCenter + heightSize / 4.0F,
+                hCenter + heightSize / 4.0F,
+                vCenter - heightSize / 4.0F
+        )
+        progressCircleAnimator.duration = 1000L
+        progressCircleAnimator.repeatMode = ValueAnimator.RESTART
+        progressCircleAnimator.repeatCount = ValueAnimator.INFINITE
+        progressCircleAnimator.start()
+
+
+    }
+
+    private fun progressBarAnimationCalc() {
+        vBackgroundAnimator = ValueAnimator.ofFloat(0f, widthSize.toFloat())
+        vBackgroundAnimator.addUpdateListener {
+            val value = it.animatedValue as Float
+            vRectEnd = value
+            invalidate()
+        }
+        vBackgroundAnimator.duration = 3000L
+        vBackgroundAnimator.repeatCount = ValueAnimator.INFINITE
+        vBackgroundAnimator.repeatMode = ValueAnimator.RESTART
+        vBackgroundAnimator.start()
+    }
 
     init {
         isClickable = true
@@ -96,14 +130,21 @@ class LoadingButton @JvmOverloads constructor(
 
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
-
+        canvas.drawCircle(10f, 10f,30f, testPaint)
         canvas.apply {
             drawBackGroundColor()
             drawLoadingProgressBar()
+            drawLoadingProgressCircle()
             drawText()
         }
 
-        //Draw the text
+    }
+
+    private fun Canvas.drawLoadingProgressCircle() {
+        Log.i("LoadingButton.drawLoadingProgressCircle", "vCircleEnd : $vCircleEnd buttonState $buttonState")
+
+        drawArc(progressCircleRectF, 0F, vCircleEnd, true, testPaint2)
+
 
     }
 
@@ -155,8 +196,8 @@ class LoadingButton @JvmOverloads constructor(
 
     override fun onDetachedFromWindow() {
         super.onDetachedFromWindow()
-        vAnimator.removeAllUpdateListeners()
-        vAnimator.cancel()
+        vBackgroundAnimator.removeAllUpdateListeners()
+        vBackgroundAnimator.cancel()
 
     }
 }
