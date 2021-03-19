@@ -1,11 +1,11 @@
 package com.udacity
 
+import android.animation.Animator
 import android.animation.ValueAnimator
 import android.content.Context
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
-import android.renderscript.Sampler
 import android.util.AttributeSet
 import android.util.Log
 import android.view.View
@@ -24,7 +24,7 @@ class LoadingButton @JvmOverloads constructor(
     private var downloadLoadingColor = 0
     private var downloadCompletedColor = 0
 
-    private var vAnimator : ValueAnimator = ValueAnimator()
+    private var vAnimator = ValueAnimator()
 
     private val paint = Paint().apply {
         // Smooth out edges of what is drawn without affecting shape.
@@ -45,25 +45,37 @@ class LoadingButton @JvmOverloads constructor(
         color = Color.RED
     }
 
-    private var vRectStart = 0f
     private var vRectEnd = 0f
-
+//    private var vCircleEnd = 0f
+//    private val progressCircle = ValueAnimator.ofFloat(360f, 0f).apply {
+//        repeatMode = ValueAnimator.RESTART
+//        repeatCount = ValueAnimator.INFINITE
+//        interpolator = LinearInterpolator()
+//        addUpdateListener {
+//            vCircleEnd = it.animatedValue as Float
+//            invalidate()
+//        }
+//    }
     private var buttonState: ButtonState by Delegates.observable<ButtonState>(ButtonState.Completed) { p, old, new ->
-        when (new){
+        when (new) {
             ButtonState.Loading -> {
-                val vAnimator = ValueAnimator.ofFloat(0f, widthSize.toFloat())
+                vAnimator = ValueAnimator.ofFloat(0f, widthSize.toFloat())
                 vAnimator.addUpdateListener {
                     val value = it.animatedValue as Float
                     vRectEnd = value
                     invalidate()
                 }
-                vAnimator.duration = 10000L
+                vAnimator.duration = 1000L
+                vAnimator.repeatCount = ValueAnimator.INFINITE
+                vAnimator.repeatMode = ValueAnimator.RESTART
                 vAnimator.start()
             }
             else -> {
-                //Reset background color
+                //Reset background color and remove animator
+                Log.i("buttonState.clear", " Clearing")
                 vRectEnd = 0f
-                invalidate()
+                vAnimator.removeAllUpdateListeners()
+                vAnimator.cancel()
             }
         }
 
@@ -108,10 +120,10 @@ class LoadingButton @JvmOverloads constructor(
     }
 
     private fun Canvas.drawLoadingProgressBar() {
-        Log.i("LoadingButton.drawLoadingProgressBar", "vRectStart , vRectEnd : $vRectStart $vRectEnd")
+//        Log.i("LoadingButton.drawLoadingProgressBar", "vRectStart , vRectEnd : $vRectStart $vRectEnd")
         when (buttonState) {
             else -> {
-                drawRect(vRectStart, 0f, vRectEnd, height.toFloat(), testPaint)
+                drawRect(0f, 0f, vRectEnd, height.toFloat(), testPaint)
             }
         }
     }
@@ -136,15 +148,15 @@ class LoadingButton @JvmOverloads constructor(
     override fun performClick(): Boolean {
         super.performClick()
         buttonState = buttonState.next()
-
         invalidate()
+
         return true
     }
 
     override fun onDetachedFromWindow() {
         super.onDetachedFromWindow()
-        vAnimator.cancel()
         vAnimator.removeAllUpdateListeners()
+        vAnimator.cancel()
 
     }
 }
