@@ -5,23 +5,26 @@ import android.content.Context
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
+import android.renderscript.Sampler
 import android.util.AttributeSet
+import android.util.Log
 import android.view.View
+import android.view.animation.LinearInterpolator
 import androidx.core.content.withStyledAttributes
 import kotlin.properties.Delegates
 
 class LoadingButton @JvmOverloads constructor(
         context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0
-) : View(context, attrs, defStyleAttr), ValueAnimator.AnimatorUpdateListener{
+) : View(context, attrs, defStyleAttr) {
     private var widthSize = 0
     private var heightSize = 0
 
-    private val valueAnimator = ValueAnimator()
 
     private var downloadClickedColor = 0
     private var downloadLoadingColor = 0
     private var downloadCompletedColor = 0
 
+    private var vAnimator : ValueAnimator = ValueAnimator()
 
     private val paint = Paint().apply {
         // Smooth out edges of what is drawn without affecting shape.
@@ -42,25 +45,29 @@ class LoadingButton @JvmOverloads constructor(
         color = Color.RED
     }
 
-    private var vAnimator = ValueAnimator().apply {
-        duration = 1250L
-        repeatCount = ValueAnimator.INFINITE
-        repeatMode = ValueAnimator.RESTART
-
-    }
+    private var vRectStart = 0f
+    private var vRectEnd = 0f
 
     private var buttonState: ButtonState by Delegates.observable<ButtonState>(ButtonState.Completed) { p, old, new ->
         when (new){
             ButtonState.Loading -> {
-                bgPaint.color = Color.YELLOW
+                val vAnimator = ValueAnimator.ofFloat(0f, widthSize.toFloat())
+                vAnimator.addUpdateListener {
+                    val value = it.animatedValue as Float
+                    vRectEnd = value
+                    invalidate()
+                }
+                vAnimator.duration = 10000L
+                vAnimator.start()
             }
-            ButtonState.Clicked -> {
-                bgPaint.color = Color.RED
-            }
-            ButtonState.Completed -> {
-                bgPaint.color = Color.GREEN
+            else -> {
+                //Reset background color
+                vRectEnd = 0f
+                invalidate()
             }
         }
+
+
     }
 
 
@@ -91,7 +98,7 @@ class LoadingButton @JvmOverloads constructor(
     private fun Canvas.drawText() {
         val textPositionX = width / 2
         val textPositionY = height / 2 - (paint.descent() + paint.ascent()) / 2
-        when(buttonState){
+        when (buttonState) {
             ButtonState.Loading -> drawText("Loading...", textPositionX.toFloat(), textPositionY, paint)
             ButtonState.Completed -> drawText("Completed...", textPositionX.toFloat(), textPositionY, paint)
             ButtonState.Clicked -> drawText("Clicked...", textPositionX.toFloat(), textPositionY, paint)
@@ -100,14 +107,13 @@ class LoadingButton @JvmOverloads constructor(
 
     }
 
-
     private fun Canvas.drawLoadingProgressBar() {
-//        when (buttonState) {
-//            ButtonState.Loading -> drawRect(0f, 0f, 50f, height.toFloat(), testPaint)
-//            else -> {
-//                drawColor(downloadCompletedColor)
-//            }
-//        }
+        Log.i("LoadingButton.drawLoadingProgressBar", "vRectStart , vRectEnd : $vRectStart $vRectEnd")
+        when (buttonState) {
+            else -> {
+                drawRect(vRectStart, 0f, vRectEnd, height.toFloat(), testPaint)
+            }
+        }
     }
 
     private fun Canvas.drawBackGroundColor() {
@@ -135,7 +141,10 @@ class LoadingButton @JvmOverloads constructor(
         return true
     }
 
-    override fun onAnimationUpdate(animation: ValueAnimator?) {
-        TODO("Not yet implemented")
+    override fun onDetachedFromWindow() {
+        super.onDetachedFromWindow()
+        vAnimator.cancel()
+        vAnimator.removeAllUpdateListeners()
+
     }
 }

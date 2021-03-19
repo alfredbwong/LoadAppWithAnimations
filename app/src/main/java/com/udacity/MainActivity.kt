@@ -43,11 +43,11 @@ class MainActivity : AppCompatActivity() {
             if (selectionId == -1) {
                 Toast.makeText(applicationContext, noDownloadSelectedText, Toast.LENGTH_SHORT).show()
             } else {
-                when (selectionId) {
-                    R.id.radioButtonGlide -> download(GLIDE_URL)
-                    R.id.radioButtonLoadApp -> download(UDACITY_URL)
-                    R.id.radioButtonRetrofit -> download(RETROFIT_URL)
-                }
+//                when (selectionId) {
+//                    R.id.radioButtonGlide -> download(GLIDE_URL)
+//                    R.id.radioButtonLoadApp -> download(UDACITY_URL)
+//                    R.id.radioButtonRetrofit -> download(RETROFIT_URL)
+//                }
             }
         }
     }
