@@ -12,7 +12,7 @@ import kotlin.properties.Delegates
 
 class LoadingButton @JvmOverloads constructor(
         context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0
-) : View(context, attrs, defStyleAttr) {
+) : View(context, attrs, defStyleAttr), ValueAnimator.AnimatorUpdateListener{
     private var widthSize = 0
     private var heightSize = 0
 
@@ -41,18 +41,26 @@ class LoadingButton @JvmOverloads constructor(
         style = Paint.Style.FILL
         color = Color.RED
     }
+
+    private var vAnimator = ValueAnimator().apply {
+        duration = 1250L
+        repeatCount = ValueAnimator.INFINITE
+        repeatMode = ValueAnimator.RESTART
+
+    }
+
     private var buttonState: ButtonState by Delegates.observable<ButtonState>(ButtonState.Completed) { p, old, new ->
-//        when (new){
-//            ButtonState.Loading -> {
-//                bgPaint.color = Color.YELLOW
-//            }
-//            ButtonState.Clicked -> {
-//                bgPaint.color = Color.RED
-//            }
-//            ButtonState.Completed -> {
-//                bgPaint.color = Color.GREEN
-//            }
-//        }
+        when (new){
+            ButtonState.Loading -> {
+                bgPaint.color = Color.YELLOW
+            }
+            ButtonState.Clicked -> {
+                bgPaint.color = Color.RED
+            }
+            ButtonState.Completed -> {
+                bgPaint.color = Color.GREEN
+            }
+        }
     }
 
 
@@ -73,23 +81,33 @@ class LoadingButton @JvmOverloads constructor(
         canvas.apply {
             drawBackGroundColor()
             drawLoadingProgressBar()
-//            drawTextBubble()
+            drawText()
         }
 
         //Draw the text
-        val textPositionX = canvas.width / 2
-        val textPositionY = canvas.height / 2 - (paint.descent() + paint.ascent()) / 2
-        canvas.drawText("HELLO", textPositionX.toFloat(), textPositionY, paint)
+
+    }
+
+    private fun Canvas.drawText() {
+        val textPositionX = width / 2
+        val textPositionY = height / 2 - (paint.descent() + paint.ascent()) / 2
+        when(buttonState){
+            ButtonState.Loading -> drawText("Loading...", textPositionX.toFloat(), textPositionY, paint)
+            ButtonState.Completed -> drawText("Completed...", textPositionX.toFloat(), textPositionY, paint)
+            ButtonState.Clicked -> drawText("Clicked...", textPositionX.toFloat(), textPositionY, paint)
+        }
+
+
     }
 
 
     private fun Canvas.drawLoadingProgressBar() {
-        when (buttonState) {
-            ButtonState.Loading -> drawRect(0f, 0f, 50f, height.toFloat(), testPaint)
-            else -> {
-                drawColor(downloadCompletedColor)
-            }
-        }
+//        when (buttonState) {
+//            ButtonState.Loading -> drawRect(0f, 0f, 50f, height.toFloat(), testPaint)
+//            else -> {
+//                drawColor(downloadCompletedColor)
+//            }
+//        }
     }
 
     private fun Canvas.drawBackGroundColor() {
@@ -115,5 +133,9 @@ class LoadingButton @JvmOverloads constructor(
 
         invalidate()
         return true
+    }
+
+    override fun onAnimationUpdate(animation: ValueAnimator?) {
+        TODO("Not yet implemented")
     }
 }
