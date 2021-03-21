@@ -96,7 +96,7 @@ class LoadingButton @JvmOverloads constructor(
                 hCenter + heightSize / 4.0F,
                 vCenter - heightSize / 4.0F
         )
-        progressCircleAnimator.duration = 1000L
+        progressCircleAnimator.duration = 2000L
         progressCircleAnimator.repeatMode = ValueAnimator.RESTART
         progressCircleAnimator.repeatCount = ValueAnimator.INFINITE
         progressCircleAnimator.start()
@@ -130,7 +130,7 @@ class LoadingButton @JvmOverloads constructor(
 
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
-        canvas.drawCircle(10f, 10f,30f, testPaint)
+
         canvas.apply {
             drawBackGroundColor()
             drawLoadingProgressBar()
@@ -141,9 +141,8 @@ class LoadingButton @JvmOverloads constructor(
     }
 
     private fun Canvas.drawLoadingProgressCircle() {
-        Log.i("LoadingButton.drawLoadingProgressCircle", "vCircleEnd : $vCircleEnd buttonState $buttonState")
-
-        drawArc(progressCircleRectF, 0F, vCircleEnd, true, testPaint2)
+        Log.i("LoadingButton.drawLoadingProgressCircle", "vCircleEnd : $vCircleEnd buttonState $buttonState progressCircleRectF $progressCircleRectF")
+        drawArc(width.toFloat()*0.8F - 25F,height.toFloat()/2-25F,width.toFloat()*0.8F + 25F,height.toFloat()/2+25F, 0.0F, vCircleEnd, true, testPaint2)
 
 
     }
