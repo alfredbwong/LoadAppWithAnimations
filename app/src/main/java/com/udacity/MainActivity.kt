@@ -1,13 +1,13 @@
 package com.udacity
 
-import android.app.DownloadManager
-import android.app.NotificationManager
-import android.app.PendingIntent
+import android.app.*
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.graphics.Color
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import android.os.Environment
 import android.util.Log
@@ -15,6 +15,10 @@ import android.widget.RadioGroup
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.NotificationCompat
+import androidx.core.content.ContextCompat
+import androidx.databinding.DataBindingUtil
+import com.udacity.databinding.ActivityMainBinding
+import com.udacity.notification.sendNotification
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.content_main.*
 
@@ -23,15 +27,19 @@ class MainActivity : AppCompatActivity() {
 
     private var downloadID: Long = 0
 
+    private lateinit var binding:ActivityMainBinding
+
     private lateinit var notificationManager: NotificationManager
     private lateinit var pendingIntent: PendingIntent
     private lateinit var action: NotificationCompat.Action
 
     private val noDownloadSelectedText = R.string.no_download_selected
 
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
+
+        binding = DataBindingUtil.setContentView(this, R.layout.activity_main)
         setSupportActionBar(toolbar)
 
         registerReceiver(receiver, IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE))
@@ -42,15 +50,24 @@ class MainActivity : AppCompatActivity() {
             val selectionId = radioGroup.checkedRadioButtonId
             if (selectionId == -1) {
                 Toast.makeText(applicationContext, noDownloadSelectedText, Toast.LENGTH_SHORT).show()
+                binding.contentMain.customButton.changeButtonState(ButtonState.Completed)
             } else {
-//                when (selectionId) {
-//                    R.id.radioButtonGlide -> download(GLIDE_URL)
-//                    R.id.radioButtonLoadApp -> download(UDACITY_URL)
-//                    R.id.radioButtonRetrofit -> download(RETROFIT_URL)
-//                }
+                when (selectionId) {
+                    R.id.radioButtonGlide -> download(GLIDE_URL)
+                    R.id.radioButtonLoadApp -> download(UDACITY_URL)
+                    R.id.radioButtonRetrofit -> download(RETROFIT_URL)
+                }
+
             }
         }
+
+        createChannel(
+                getString(R.string.notification_channel_id),
+                getString(R.string.notification_channel_name)
+        )
     }
+
+
 
     private val receiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
@@ -58,6 +75,47 @@ class MainActivity : AppCompatActivity() {
             Log.i("MainActivity", "Receiver: " + id.toString())
             val action = intent?.action
             Log.i("MainActivity", "Action intent: $action")
+
+            //Query Download Manager for statusess
+            val downloadManager : DownloadManager = getSystemService(DOWNLOAD_SERVICE) as DownloadManager
+            if (downloadID == id){
+                Toast.makeText(context, "Download Completed", Toast.LENGTH_SHORT).show();
+                Log.i("receiver", "id matche downloadId")
+
+                val cursor = downloadManager.query(DownloadManager.Query().setFilterById(downloadID))
+                if (cursor.moveToFirst()) {
+                    when (cursor.getInt(cursor.getColumnIndex(DownloadManager.COLUMN_STATUS))) {
+                        DownloadManager.STATUS_FAILED -> {
+                            Log.i("MainActivity", "Status STATUS_FAILED")
+                            Toast.makeText(context, "Failed to download package", Toast.LENGTH_LONG).show()
+                            binding.contentMain.customButton.changeButtonState(ButtonState.Completed)
+                        }
+                        DownloadManager.STATUS_PAUSED -> {
+                            Log.i("MainActivity", "Status STATUS_PAUSED")
+                        }
+                        DownloadManager.STATUS_PENDING -> {
+                            Log.i("MainActivity", "Status STATUS_PENDING")
+                        }
+                        DownloadManager.STATUS_RUNNING -> {
+                            Log.i("MainActivity", "Status STATUS_RUNNING")
+                            binding.contentMain.customButton.changeButtonState(ButtonState.Loading)
+
+                        }
+                        DownloadManager.STATUS_SUCCESSFUL -> {
+                            Log.i("MainActivity", "Status STATUS_SUCCESSFUL")
+                            binding.contentMain.customButton.changeButtonState(ButtonState.Completed)
+
+                            sendDownloadCompleteNotification()
+                        }
+                        else ->{
+
+                        }
+                    }
+                }
+            }
+
+
+
 
         }
     }
@@ -81,6 +139,7 @@ class MainActivity : AppCompatActivity() {
         downloadID =
                 downloadManager.enqueue(request)// enqueue puts the download request in the queue.
 
+
     }
 
     companion object {
@@ -97,4 +156,26 @@ class MainActivity : AppCompatActivity() {
         private const val DEFAULT_RETROFIT_FILE_NAME = "retrofit"
     }
 
+    private fun sendDownloadCompleteNotification(){
+        val notificationManager = ContextCompat.getSystemService(application, NotificationManager::class.java) as NotificationManager
+        notificationManager.sendNotification(application.getString(R.string.notification_description), applicationContext)
+    }
+
+    private fun createChannel(channelId: String, channelName: String){
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O){
+            val notificationChannel = NotificationChannel(channelId, channelName, NotificationManager.IMPORTANCE_LOW)
+            notificationChannel.enableLights(true)
+            notificationChannel.lightColor = Color.RED
+            notificationChannel.enableVibration(true)
+            notificationChannel.description = "Download Complete..."
+
+            val notificationManager = getSystemService(NotificationManager::class.java)
+            notificationManager.createNotificationChannel(notificationChannel)
+        }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        unregisterReceiver(receiver)
+    }
 }

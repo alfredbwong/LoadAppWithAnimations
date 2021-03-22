@@ -60,16 +60,10 @@ class LoadingButton @JvmOverloads constructor(
             ButtonState.Loading -> {
                 progressBarAnimationCalc()
                 progressCircleAnimationCalc()
-//                animatorSet.playTogether(vBackgroundAnimator)
-//                animatorSet.start()
-
             }
             else -> {
                 //Reset background color and remove animator
                 Log.i("buttonState.clear", " Clearing")
-
-//                animatorSet.removeAllListeners()
-//                animatorSet.cancel()
                 progressCircleAnimator.cancel()
                 vBackgroundAnimator.cancel()
                 vCircleEnd = 0F
@@ -90,12 +84,7 @@ class LoadingButton @JvmOverloads constructor(
             invalidate()
 
         }
-        progressCircleRectF.set(
-                hCenter - heightSize / 4.0F,
-                vCenter + heightSize / 4.0F,
-                hCenter + heightSize / 4.0F,
-                vCenter - heightSize / 4.0F
-        )
+
         progressCircleAnimator.duration = 2000L
         progressCircleAnimator.repeatMode = ValueAnimator.RESTART
         progressCircleAnimator.repeatCount = ValueAnimator.INFINITE
@@ -141,7 +130,7 @@ class LoadingButton @JvmOverloads constructor(
     }
 
     private fun Canvas.drawLoadingProgressCircle() {
-        Log.i("LoadingButton.drawLoadingProgressCircle", "vCircleEnd : $vCircleEnd buttonState $buttonState progressCircleRectF $progressCircleRectF")
+//        Log.i("LoadingButton.drawLoadingProgressCircle", "vCircleEnd : $vCircleEnd buttonState $buttonState progressCircleRectF $progressCircleRectF")
         drawArc(width.toFloat()*0.8F - 25F,height.toFloat()/2-25F,width.toFloat()*0.8F + 25F,height.toFloat()/2+25F, 0.0F, vCircleEnd, true, testPaint2)
 
 
@@ -187,8 +176,10 @@ class LoadingButton @JvmOverloads constructor(
 
     override fun performClick(): Boolean {
         super.performClick()
-        buttonState = buttonState.next()
-        invalidate()
+        if (buttonState == ButtonState.Completed){
+            buttonState = ButtonState.Clicked
+            invalidate()
+        }
 
         return true
     }
@@ -198,5 +189,13 @@ class LoadingButton @JvmOverloads constructor(
         vBackgroundAnimator.removeAllUpdateListeners()
         vBackgroundAnimator.cancel()
 
+    }
+
+    fun changeButtonState(state: ButtonState) {
+        Log.i("LoadingButton", "Change button state : $state")
+        if(buttonState != state){
+            buttonState = state
+
+        }
     }
 }
