@@ -1,5 +1,7 @@
 package com.udacity
 
+import android.animation.Animator
+import android.animation.AnimatorListenerAdapter
 import android.animation.AnimatorSet
 import android.animation.ValueAnimator
 import android.content.Context
@@ -27,8 +29,20 @@ class LoadingButton @JvmOverloads constructor(
 
     private var vBackgroundAnimator = ValueAnimator()
 
-    private val animatorSet: AnimatorSet = AnimatorSet().apply {
+    private val animatorSet = AnimatorSet().apply {
         duration = 3000L
+        addListener(object: AnimatorListenerAdapter(){
+            override fun onAnimationStart(animation: Animator?) {
+                super.onAnimationStart(animation)
+                this@LoadingButton.isEnabled = false
+            }
+
+            override fun onAnimationEnd(animation: Animator?) {
+                super.onAnimationEnd(animation)
+                this@LoadingButton.isEnabled = true
+            }
+        })
+
     }
 
     private val paint = Paint().apply {
@@ -60,12 +74,13 @@ class LoadingButton @JvmOverloads constructor(
             ButtonState.Loading -> {
                 progressBarAnimationCalc()
                 progressCircleAnimationCalc()
+                animatorSet.playTogether(progressCircleAnimator, vBackgroundAnimator)
+                animatorSet.start()
             }
             else -> {
                 //Reset background color and remove animator
                 Log.i("buttonState.clear", " Clearing")
-                progressCircleAnimator.cancel()
-                vBackgroundAnimator.cancel()
+                animatorSet.cancel()
                 vCircleEnd = 0F
                 vRectEnd = 0F
                 invalidate()
@@ -88,7 +103,7 @@ class LoadingButton @JvmOverloads constructor(
         progressCircleAnimator.duration = 2000L
         progressCircleAnimator.repeatMode = ValueAnimator.RESTART
         progressCircleAnimator.repeatCount = ValueAnimator.INFINITE
-        progressCircleAnimator.start()
+//        progressCircleAnimator.start()
 
 
     }
@@ -103,7 +118,7 @@ class LoadingButton @JvmOverloads constructor(
         vBackgroundAnimator.duration = 3000L
         vBackgroundAnimator.repeatCount = ValueAnimator.INFINITE
         vBackgroundAnimator.repeatMode = ValueAnimator.RESTART
-        vBackgroundAnimator.start()
+//        vBackgroundAnimator.start()
     }
 
     init {

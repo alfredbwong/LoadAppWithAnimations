@@ -52,6 +52,8 @@ class MainActivity : AppCompatActivity() {
                 Toast.makeText(applicationContext, noDownloadSelectedText, Toast.LENGTH_SHORT).show()
                 binding.contentMain.customButton.changeButtonState(ButtonState.Completed)
             } else {
+                binding.contentMain.customButton.changeButtonState(ButtonState.Loading)
+
                 when (selectionId) {
                     R.id.radioButtonGlide -> download(GLIDE_URL)
                     R.id.radioButtonLoadApp -> download(UDACITY_URL)
@@ -80,15 +82,17 @@ class MainActivity : AppCompatActivity() {
             val downloadManager : DownloadManager = getSystemService(DOWNLOAD_SERVICE) as DownloadManager
             if (downloadID == id){
                 Toast.makeText(context, "Download Completed", Toast.LENGTH_SHORT).show();
-                Log.i("receiver", "id matche downloadId")
+                Log.i("receiver", "id matches downloadId")
 
                 val cursor = downloadManager.query(DownloadManager.Query().setFilterById(downloadID))
                 if (cursor.moveToFirst()) {
                     when (cursor.getInt(cursor.getColumnIndex(DownloadManager.COLUMN_STATUS))) {
                         DownloadManager.STATUS_FAILED -> {
                             Log.i("MainActivity", "Status STATUS_FAILED")
-                            Toast.makeText(context, "Failed to download package", Toast.LENGTH_LONG).show()
+                            Toast.makeText(context, "Failed to download package", Toast.LENGTH_SHORT).show()
                             binding.contentMain.customButton.changeButtonState(ButtonState.Completed)
+                            sendDownloadCompleteNotification()
+
                         }
                         DownloadManager.STATUS_PAUSED -> {
                             Log.i("MainActivity", "Status STATUS_PAUSED")
@@ -98,6 +102,7 @@ class MainActivity : AppCompatActivity() {
                         }
                         DownloadManager.STATUS_RUNNING -> {
                             Log.i("MainActivity", "Status STATUS_RUNNING")
+                            //This never comes up
                             binding.contentMain.customButton.changeButtonState(ButtonState.Loading)
 
                         }
