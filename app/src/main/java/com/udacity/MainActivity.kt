@@ -21,6 +21,7 @@ import com.udacity.databinding.ActivityMainBinding
 import com.udacity.notification.sendNotification
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.content_main.*
+import kotlin.concurrent.thread
 
 
 class MainActivity : AppCompatActivity() {
@@ -48,25 +49,32 @@ class MainActivity : AppCompatActivity() {
             val radioGroup = findViewById<RadioGroup>(R.id.radioGroup)
             //Check for radiobutton selected otherwise show toast
             val selectionId = radioGroup.checkedRadioButtonId
-            if (selectionId == -1) {
-                Toast.makeText(applicationContext, noDownloadSelectedText, Toast.LENGTH_SHORT).show()
-                binding.contentMain.customButton.changeButtonState(ButtonState.Completed)
-            } else {
-                binding.contentMain.customButton.changeButtonState(ButtonState.Loading)
+            binding.contentMain.customButton.isSelectionValid = true
 
-                when (selectionId) {
-                    R.id.radioButtonGlide -> download(GLIDE_URL)
-                    R.id.radioButtonLoadApp -> download(UDACITY_URL)
-                    R.id.radioButtonRetrofit -> download(RETROFIT_URL)
+            when (selectionId) {
+                R.id.radioButtonGlide ->{
+                    download(GLIDE_URL)
                 }
-
+                R.id.radioButtonLoadApp -> {
+                    download(UDACITY_URL)
+                }
+                R.id.radioButtonRetrofit -> {
+                    download(RETROFIT_URL)
+                }
+                -1 -> {
+                    Toast.makeText(applicationContext, noDownloadSelectedText, Toast.LENGTH_SHORT).show()
+                    binding.contentMain.customButton.isSelectionValid = false
+                }
             }
+            createChannel(
+                    getString(R.string.notification_channel_id),
+                    getString(R.string.notification_channel_name)
+            )
+
+
         }
 
-        createChannel(
-                getString(R.string.notification_channel_id),
-                getString(R.string.notification_channel_name)
-        )
+
     }
 
 
@@ -86,6 +94,7 @@ class MainActivity : AppCompatActivity() {
 
                 val cursor = downloadManager.query(DownloadManager.Query().setFilterById(downloadID))
                 if (cursor.moveToFirst()) {
+
                     when (cursor.getInt(cursor.getColumnIndex(DownloadManager.COLUMN_STATUS))) {
                         DownloadManager.STATUS_FAILED -> {
                             Log.i("MainActivity", "Status STATUS_FAILED")
@@ -126,6 +135,8 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun download(url: String) {
+        binding.contentMain.customButton.changeButtonState(ButtonState.Loading)
+
         val request =
                 DownloadManager.Request(Uri.parse(url))
                         .setTitle(when (url) {
@@ -143,6 +154,36 @@ class MainActivity : AppCompatActivity() {
         val downloadManager = getSystemService(DOWNLOAD_SERVICE) as DownloadManager
         downloadID =
                 downloadManager.enqueue(request)// enqueue puts the download request in the queue.
+
+//        thread {
+//            var downloading = true
+//            while (downloading){
+//                val query = DownloadManager.Query()
+//                query.setFilterById(downloadID)
+//
+//                val cursor = downloadManager.query(query)
+//                if(cursor.moveToFirst()){
+//                    val bytesDownloaded = cursor.getInt(cursor.getColumnIndex(DownloadManager.COLUMN_BYTES_DOWNLOADED_SO_FAR))
+//                    val bytesTotal = cursor.getInt(cursor.getColumnIndex(DownloadManager.COLUMN_TOTAL_SIZE_BYTES))
+//
+//                    if(cursor.getInt(cursor.getColumnIndex(DownloadManager.COLUMN_STATUS)) == DownloadManager.STATUS_SUCCESSFUL){
+//                        downloading = false
+//                    }
+//                    var progress = 0L
+//                    if (bytesTotal != -1){
+//                        progress = bytesDownloaded*100L/bytesTotal
+//
+//                    }
+//                    runOnUiThread {
+//                        Log.i("MainActivity.checkdownload","bytesDownloaded : $bytesDownloaded bytesTotal $bytesTotal progress $progress" )
+//
+////                        Log.i("MainActivity.checkdownload",progress.toString())
+//                    }
+//
+//                    cursor.close()
+//                }
+//            }
+//        }
 
 
     }

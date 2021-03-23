@@ -12,7 +12,6 @@ import android.graphics.RectF
 import android.util.AttributeSet
 import android.util.Log
 import android.view.View
-import android.view.animation.LinearInterpolator
 import androidx.core.content.withStyledAttributes
 import kotlin.properties.Delegates
 
@@ -23,15 +22,19 @@ class LoadingButton @JvmOverloads constructor(
     private var heightSize = 0
 
 
-    private var downloadClickedColor = 0
+    private var downloadCircleColor = 0
     private var downloadLoadingColor = 0
     private var downloadCompletedColor = 0
 
     private var vBackgroundAnimator = ValueAnimator()
 
+    private var buttonText = ""
+
+    var isSelectionValid = false
+
     private val animatorSet = AnimatorSet().apply {
-        duration = 3000L
-        addListener(object: AnimatorListenerAdapter(){
+        duration = 1000L
+        addListener(object : AnimatorListenerAdapter() {
             override fun onAnimationStart(animation: Animator?) {
                 super.onAnimationStart(animation)
                 this@LoadingButton.isEnabled = false
@@ -70,20 +73,27 @@ class LoadingButton @JvmOverloads constructor(
     private val progressCircleRectF = RectF()
     private var progressCircleAnimator = ValueAnimator()
     private var buttonState: ButtonState by Delegates.observable<ButtonState>(ButtonState.Completed) { p, old, new ->
+        Log.i("LoadingButton.buttonState", "old : $old  new : $new")
         when (new) {
             ButtonState.Loading -> {
                 progressBarAnimationCalc()
                 progressCircleAnimationCalc()
+                buttonText = "Loading..."
                 animatorSet.playTogether(progressCircleAnimator, vBackgroundAnimator)
                 animatorSet.start()
             }
+            ButtonState.Clicked -> {
+                if (!isSelectionValid) {
+                    changeButtonState(ButtonState.Completed)
+                }
+            }
             else -> {
                 //Reset background color and remove animator
-                Log.i("buttonState.clear", " Clearing")
+                Log.i("LoadingButton", "not loading anymore invalidate $buttonState")
                 animatorSet.cancel()
                 vCircleEnd = 0F
                 vRectEnd = 0F
-                invalidate()
+
             }
         }
 
@@ -100,10 +110,12 @@ class LoadingButton @JvmOverloads constructor(
 
         }
 
-        progressCircleAnimator.duration = 2000L
-        progressCircleAnimator.repeatMode = ValueAnimator.RESTART
-        progressCircleAnimator.repeatCount = ValueAnimator.INFINITE
-//        progressCircleAnimator.start()
+        progressCircleAnimator.duration = 3000L
+        if (isSelectionValid) {
+            progressCircleAnimator.repeatMode = ValueAnimator.RESTART
+            progressCircleAnimator.repeatCount = ValueAnimator.INFINITE
+        }
+
 
 
     }
@@ -118,14 +130,13 @@ class LoadingButton @JvmOverloads constructor(
         vBackgroundAnimator.duration = 3000L
         vBackgroundAnimator.repeatCount = ValueAnimator.INFINITE
         vBackgroundAnimator.repeatMode = ValueAnimator.RESTART
-//        vBackgroundAnimator.start()
     }
 
     init {
         isClickable = true
 
         context.withStyledAttributes(attrs, R.styleable.LoadingButton) {
-            downloadClickedColor = getColor(R.styleable.LoadingButton_downloadClicked, 0)
+            downloadCircleColor = getColor(R.styleable.LoadingButton_downloadCircleColor, 0)
             downloadLoadingColor = getColor(R.styleable.LoadingButton_downloadLoading, 0)
             downloadCompletedColor = getColor(R.styleable.LoadingButton_downloadCompleted, 0)
         }
@@ -146,12 +157,22 @@ class LoadingButton @JvmOverloads constructor(
 
     private fun Canvas.drawLoadingProgressCircle() {
 //        Log.i("LoadingButton.drawLoadingProgressCircle", "vCircleEnd : $vCircleEnd buttonState $buttonState progressCircleRectF $progressCircleRectF")
-        drawArc(width.toFloat()*0.8F - 25F,height.toFloat()/2-25F,width.toFloat()*0.8F + 25F,height.toFloat()/2+25F, 0.0F, vCircleEnd, true, testPaint2)
+        testPaint2.apply{
+            color = downloadCircleColor
+        }
+        drawArc(width.toFloat() * 0.8F - 25F
+                , height.toFloat() / 2 - 25F,
+                width.toFloat() * 0.8F + 25F
+                , height.toFloat() / 2 + 25F,
+                0.0F, vCircleEnd,
+                true,
+                testPaint2)
 
 
     }
 
     private fun Canvas.drawText() {
+//        Log.i("LoadingButton.drawText", "buttonState: $buttonState")
         val textPositionX = width / 2
         val textPositionY = height / 2 - (paint.descent() + paint.ascent()) / 2
         when (buttonState) {
@@ -165,11 +186,10 @@ class LoadingButton @JvmOverloads constructor(
 
     private fun Canvas.drawLoadingProgressBar() {
 //        Log.i("LoadingButton.drawLoadingProgressBar", "vRectStart , vRectEnd : $vRectStart $vRectEnd")
-        when (buttonState) {
-            else -> {
-                drawRect(0f, 0f, vRectEnd, height.toFloat(), testPaint)
-            }
+        testPaint.apply {
+            color = downloadLoadingColor
         }
+        drawRect(0f, 0f, vRectEnd, height.toFloat(), testPaint)
     }
 
     private fun Canvas.drawBackGroundColor() {
@@ -190,8 +210,9 @@ class LoadingButton @JvmOverloads constructor(
     }
 
     override fun performClick(): Boolean {
+        Log.i("LoadingButton.performClick", "$buttonState")
         super.performClick()
-        if (buttonState == ButtonState.Completed){
+        if (buttonState == ButtonState.Completed) {
             buttonState = ButtonState.Clicked
             invalidate()
         }
@@ -201,16 +222,16 @@ class LoadingButton @JvmOverloads constructor(
 
     override fun onDetachedFromWindow() {
         super.onDetachedFromWindow()
-        vBackgroundAnimator.removeAllUpdateListeners()
-        vBackgroundAnimator.cancel()
+        animatorSet.cancel()
 
     }
 
     fun changeButtonState(state: ButtonState) {
-        Log.i("LoadingButton", "Change button state : $state")
-        if(buttonState != state){
+        Log.i("LoadingButton.changeButtonState", "Change button state to: $state from $buttonState")
+        if (buttonState != state) {
             buttonState = state
-
+            invalidate()
         }
+
     }
 }
