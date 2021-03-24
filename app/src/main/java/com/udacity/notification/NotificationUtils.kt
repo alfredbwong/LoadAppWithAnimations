@@ -6,14 +6,15 @@ import android.content.Context
 import android.content.Intent
 import androidx.core.app.NotificationCompat
 import com.udacity.DetailActivity
-import com.udacity.MainActivity
 import com.udacity.R
 
 private val NOTIFICATION_ID = 0
 
-fun NotificationManager.sendNotification(messageBody: String, applicationContext: Context){
+fun NotificationManager.sendNotification(messageBody: String, applicationContext: Context, titleOfDownload: String, status: Int){
 
     val contentIntent = Intent(applicationContext, DetailActivity::class.java)
+    contentIntent.putExtra("download-title", "$titleOfDownload")
+    contentIntent.putExtra("download-status", "$status")
     val contentPendingIntent = PendingIntent.getActivities(
             applicationContext,
             NOTIFICATION_ID,

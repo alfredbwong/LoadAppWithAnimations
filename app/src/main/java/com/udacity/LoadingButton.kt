@@ -28,8 +28,6 @@ class LoadingButton @JvmOverloads constructor(
 
     private var vBackgroundAnimator = ValueAnimator()
 
-    private var buttonText = ""
-
     var isSelectionValid = false
 
     private val animatorSet = AnimatorSet().apply {
@@ -73,12 +71,11 @@ class LoadingButton @JvmOverloads constructor(
     private val progressCircleRectF = RectF()
     private var progressCircleAnimator = ValueAnimator()
     private var buttonState: ButtonState by Delegates.observable<ButtonState>(ButtonState.Completed) { p, old, new ->
-        Log.i("LoadingButton.buttonState", "old : $old  new : $new")
+//        Log.i("LoadingButton.buttonState", "old : $old  new : $new")
         when (new) {
             ButtonState.Loading -> {
                 progressBarAnimationCalc()
                 progressCircleAnimationCalc()
-                buttonText = "Loading..."
                 animatorSet.playTogether(progressCircleAnimator, vBackgroundAnimator)
                 animatorSet.start()
             }
@@ -89,7 +86,7 @@ class LoadingButton @JvmOverloads constructor(
             }
             else -> {
                 //Reset background color and remove animator
-                Log.i("LoadingButton", "not loading anymore invalidate $buttonState")
+//                Log.i("LoadingButton", "not loading anymore invalidate $buttonState")
                 animatorSet.cancel()
                 vCircleEnd = 0F
                 vRectEnd = 0F
@@ -210,7 +207,7 @@ class LoadingButton @JvmOverloads constructor(
     }
 
     override fun performClick(): Boolean {
-        Log.i("LoadingButton.performClick", "$buttonState")
+//        Log.i("LoadingButton.performClick", "$buttonState")
         super.performClick()
         if (buttonState == ButtonState.Completed) {
             buttonState = ButtonState.Clicked
@@ -227,7 +224,7 @@ class LoadingButton @JvmOverloads constructor(
     }
 
     fun changeButtonState(state: ButtonState) {
-        Log.i("LoadingButton.changeButtonState", "Change button state to: $state from $buttonState")
+//        Log.i("LoadingButton.changeButtonState", "Change button state to: $state from $buttonState")
         if (buttonState != state) {
             buttonState = state
             invalidate()

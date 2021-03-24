@@ -21,5 +21,7 @@
 
     <string name="notification_channel_id" translatable="true">notification_channel</string>
     <string name="notification_channel_name" translatable="false">LoadApp</string>
+    <string name="download_status">Download Status</string>
+    <string name="download_title">Download Title</string>
 
 </resources>

@@ -21,7 +21,6 @@ import com.udacity.databinding.ActivityMainBinding
 import com.udacity.notification.sendNotification
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.content_main.*
-import kotlin.concurrent.thread
 
 
 class MainActivity : AppCompatActivity() {
@@ -93,14 +92,16 @@ class MainActivity : AppCompatActivity() {
                 Log.i("receiver", "id matches downloadId")
 
                 val cursor = downloadManager.query(DownloadManager.Query().setFilterById(downloadID))
+
                 if (cursor.moveToFirst()) {
+                    val titleOfDownload = cursor.getString(cursor.getColumnIndex(DownloadManager.COLUMN_TITLE))
 
                     when (cursor.getInt(cursor.getColumnIndex(DownloadManager.COLUMN_STATUS))) {
                         DownloadManager.STATUS_FAILED -> {
                             Log.i("MainActivity", "Status STATUS_FAILED")
                             Toast.makeText(context, "Failed to download package", Toast.LENGTH_SHORT).show()
                             binding.contentMain.customButton.changeButtonState(ButtonState.Completed)
-                            sendDownloadCompleteNotification()
+                            sendDownloadCompleteNotification(titleOfDownload, DownloadManager.STATUS_FAILED)
 
                         }
                         DownloadManager.STATUS_PAUSED -> {
@@ -119,13 +120,15 @@ class MainActivity : AppCompatActivity() {
                             Log.i("MainActivity", "Status STATUS_SUCCESSFUL")
                             binding.contentMain.customButton.changeButtonState(ButtonState.Completed)
 
-                            sendDownloadCompleteNotification()
+                            sendDownloadCompleteNotification(titleOfDownload, DownloadManager.STATUS_SUCCESSFUL)
                         }
                         else ->{
 
                         }
                     }
                 }
+                cursor.close()
+
             }
 
 
@@ -202,9 +205,9 @@ class MainActivity : AppCompatActivity() {
         private const val DEFAULT_RETROFIT_FILE_NAME = "retrofit"
     }
 
-    private fun sendDownloadCompleteNotification(){
+    private fun sendDownloadCompleteNotification(titleOfDownload: String, status: Int) {
         val notificationManager = ContextCompat.getSystemService(application, NotificationManager::class.java) as NotificationManager
-        notificationManager.sendNotification(application.getString(R.string.notification_description), applicationContext)
+        notificationManager.sendNotification(application.getString(R.string.notification_description), applicationContext, titleOfDownload, status)
     }
 
     private fun createChannel(channelId: String, channelName: String){
