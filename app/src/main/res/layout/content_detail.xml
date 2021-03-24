@@ -29,10 +29,28 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="24dp"
-            android:layout_marginTop="24dp"
+            android:layout_marginTop="100dp"
             android:text="@string/download_status"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/download_title" />
+
+        <TextView
+            android:id="@+id/download_title_value"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="24dp"
+            android:text="@string/download_title_value"
+            app:layout_constraintBaseline_toBaselineOf="@+id/download_title"
+            app:layout_constraintStart_toEndOf="@+id/download_title" />
+
+        <TextView
+            android:id="@+id/download_status_value"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="24dp"
+            android:text="@string/download_status_value"
+            app:layout_constraintBaseline_toBaselineOf="@+id/download_status"
+            app:layout_constraintStart_toEndOf="@+id/download_status" />
 
     </androidx.constraintlayout.motion.widget.MotionLayout>
 </layout>

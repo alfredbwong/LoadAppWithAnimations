@@ -27,8 +27,8 @@ class DetailActivity : AppCompatActivity() {
         val titleOfDownload = intent.getStringExtra("download-title")
         val downloadStatus = intent.getStringExtra("download-status")
         Log.i("DetailActivity.onCreate", "titleOfDownload $titleOfDownload ,downloadStatus: $downloadStatus")
-        binding.contentDetailInclude.downloadTitle.text = titleOfDownload
-        binding.contentDetailInclude.downloadStatus.text = downloadStatus
+        binding.contentDetailInclude.downloadTitleValue.text = titleOfDownload
+        binding.contentDetailInclude.downloadStatusValue.text = downloadStatus
     }
 
 }
