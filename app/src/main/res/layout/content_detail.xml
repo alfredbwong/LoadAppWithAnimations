@@ -52,5 +52,17 @@
             app:layout_constraintBaseline_toBaselineOf="@+id/download_status"
             app:layout_constraintStart_toEndOf="@+id/download_status" />
 
+        <Button
+            android:id="@+id/backButton"
+            android:layout_width="409dp"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="48dp"
+            android:backgroundTint="#009688"
+            android:text="@string/download_another_file_btn"
+            android:textColor="#EDEBF1"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent" />
+
     </androidx.constraintlayout.motion.widget.MotionLayout>
 </layout>

@@ -81,15 +81,15 @@ class MainActivity : AppCompatActivity() {
     private val receiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
             val id = intent?.getLongExtra(DownloadManager.EXTRA_DOWNLOAD_ID, -1)
-            Log.i("MainActivity", "Receiver: " + id.toString())
+//            Log.i("MainActivity", "Receiver: " + id.toString())
             val action = intent?.action
-            Log.i("MainActivity", "Action intent: $action")
+//            Log.i("MainActivity", "Action intent: $action")
 
             //Query Download Manager for statusess
             val downloadManager : DownloadManager = getSystemService(DOWNLOAD_SERVICE) as DownloadManager
             if (downloadID == id){
                 Toast.makeText(context, "Download Completed", Toast.LENGTH_SHORT).show();
-                Log.i("receiver", "id matches downloadId")
+//                Log.i("receiver", "id matches downloadId")
 
                 val cursor = downloadManager.query(DownloadManager.Query().setFilterById(downloadID))
 
@@ -98,26 +98,26 @@ class MainActivity : AppCompatActivity() {
 
                     when (cursor.getInt(cursor.getColumnIndex(DownloadManager.COLUMN_STATUS))) {
                         DownloadManager.STATUS_FAILED -> {
-                            Log.i("MainActivity", "Status STATUS_FAILED")
+//                            Log.i("MainActivity", "Status STATUS_FAILED ${DownloadManager.STATUS_FAILED}")
                             Toast.makeText(context, "Failed to download package", Toast.LENGTH_SHORT).show()
                             binding.contentMain.customButton.changeButtonState(ButtonState.Completed)
                             sendDownloadCompleteNotification(titleOfDownload, DownloadManager.STATUS_FAILED)
 
                         }
                         DownloadManager.STATUS_PAUSED -> {
-                            Log.i("MainActivity", "Status STATUS_PAUSED")
+                            Log.i("MainActivity", "Status STATUS_PAUSED ${DownloadManager.STATUS_PAUSED}")
                         }
                         DownloadManager.STATUS_PENDING -> {
-                            Log.i("MainActivity", "Status STATUS_PENDING")
+                            Log.i("MainActivity", "Status STATUS_PENDING ${DownloadManager.STATUS_PENDING}")
                         }
                         DownloadManager.STATUS_RUNNING -> {
-                            Log.i("MainActivity", "Status STATUS_RUNNING")
+                            Log.i("MainActivity", "Status STATUS_RUNNING ${DownloadManager.STATUS_RUNNING}")
                             //This never comes up
                             binding.contentMain.customButton.changeButtonState(ButtonState.Loading)
 
                         }
                         DownloadManager.STATUS_SUCCESSFUL -> {
-                            Log.i("MainActivity", "Status STATUS_SUCCESSFUL")
+                            Log.i("MainActivity", "Status STATUS_SUCCESSFUL ${DownloadManager.STATUS_SUCCESSFUL}")
                             binding.contentMain.customButton.changeButtonState(ButtonState.Completed)
 
                             sendDownloadCompleteNotification(titleOfDownload, DownloadManager.STATUS_SUCCESSFUL)

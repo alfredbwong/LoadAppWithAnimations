@@ -25,5 +25,9 @@
     <string name="download_title">Download Title:</string>
     <string name="download_title_value">File that was downloaded</string>
     <string name="download_status_value">Download Status Value</string>
+    <string name="default_status_text">Unknown Status</string>
+    <string name="success_status_text">SUCCESS</string>
+    <string name="failure_status_text">FAILURE</string>
+    <string name="download_another_file_btn">Download Another File</string>
 
 </resources>
