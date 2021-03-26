@@ -5,6 +5,7 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.content.pm.PackageManager
 import android.graphics.Color
 import android.net.Uri
 import android.os.Build
@@ -14,13 +15,16 @@ import android.util.Log
 import android.widget.RadioGroup
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
 import androidx.databinding.DataBindingUtil
+import com.kotlinpermissions.KotlinPermissions
 import com.udacity.databinding.ActivityMainBinding
 import com.udacity.notification.sendNotification
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.content_main.*
+import java.util.jar.Manifest
 
 
 class MainActivity : AppCompatActivity() {
@@ -39,6 +43,17 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        KotlinPermissions.with(this)
+                .permissions(android.Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                .onAccepted{
+                    Toast.makeText(applicationContext, "Accepted", Toast.LENGTH_SHORT).show()
+                }
+                .onDenied{
+                    Toast.makeText(applicationContext, "Denied", Toast.LENGTH_SHORT).show()
+                }
+                .onForeverDenied{
+                    Toast.makeText(applicationContext, "Forever denied", Toast.LENGTH_SHORT).show()
+                }.ask()
         binding = DataBindingUtil.setContentView(this, R.layout.activity_main)
         setSupportActionBar(toolbar)
 
@@ -227,4 +242,5 @@ class MainActivity : AppCompatActivity() {
         super.onDestroy()
         unregisterReceiver(receiver)
     }
+
 }
